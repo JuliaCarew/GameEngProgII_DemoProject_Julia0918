@@ -138,7 +138,7 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = horizontalMovement;
         movement.y = velocity.y;
 
-        characterController.Move(movement * Time.deltaTime);
+        characterController.Move(movement * Time.deltaTime * currentMoveSpeed);
     }
 
     void HandlePlayerLook()
