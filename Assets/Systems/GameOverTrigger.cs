@@ -6,9 +6,6 @@ public class GameOverTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
-            gameStateManager.GameOver();
-        }
+        if (other.CompareTag("Player")) gameStateManager.GameOver();
     }
 }
