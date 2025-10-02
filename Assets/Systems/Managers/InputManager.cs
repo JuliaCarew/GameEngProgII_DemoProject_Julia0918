@@ -29,7 +29,7 @@ public class InputManager : MonoBehaviour, Inputs.IPlayerActions
     public event Action JumpInputEvent;
 
     // sprint
-    public event Action SprintInputEvent;
+    public event Action<bool> SprintInputEvent;
 
     // crouch
     public event Action CrouchInputEvent;
@@ -56,7 +56,10 @@ public class InputManager : MonoBehaviour, Inputs.IPlayerActions
 
     public void OnSprint(InputAction.CallbackContext context)
     {
-        SprintInputEvent?.Invoke();
+        if (context.performed)
+            SprintInputEvent?.Invoke(true);   // button pressed
+        else if (context.canceled)
+            SprintInputEvent?.Invoke(false);  // button released
     }
 
     public void OnCrouch(InputAction.CallbackContext context)

@@ -9,7 +9,23 @@ using UnityEditor.Rendering.LookDev;
 
 public class PlayerController : MonoBehaviour
 {
-    private InputManager inputManager => GameManager.Instance.inputManager;
+    public enum MovementState
+    {
+        Idle,
+        Walking,
+        Sprinting,
+        Crouching,
+        Jumping,
+        Falling
+    }
+
+    public MovementState currentMovementState;
+    public float characterVelocity;
+    
+    #region Variables
+
+    // Manager references
+    private InputManager inputManager => GameManager.Instance.InputManager;
 
     private CharacterController characterController => GetComponent<CharacterController>();
 
@@ -80,54 +96,126 @@ public class PlayerController : MonoBehaviour
     private float targetHeight;
     private Vector3 targetCenter;
     private float targetCamY; // Target Y position for camera root during crouch transition
- 
+
+    private int playerLayerMask;
+
+    #endregion
 
     private void Awake()
     {
+        playerLayerMask = ~LayerMask.GetMask("Player");
+
+        #region Initialize Default values
+        currentMovementState = MovementState.Idle;
+
+
         // Initialize crouch variables
         standingHeight = characterController.height;
         standingCenter = characterController.center;
         standingCamY = cameraRoot.localPosition.y;
- 
+
         targetHeight = standingHeight;
         targetCenter = standingCenter;
         targetCamY = cameraRoot.localPosition.y;
 
         // initialize current move speed to walk speed
         currentMoveSpeed = walkSpeed;
+
+        crouchInput = false;
+        sprintInput = false;
+
+        #endregion
     }
 
-    private void Update()
+    public void HandlePlayerMovement()
     {
-        HandlePlayerMovement();
-    }
+        characterVelocity = characterController.velocity.magnitude;
 
-    private void LateUpdate()
-    {
-        HandlePlayerLook();
-    }
-
-    void HandlePlayerMovement()
-    {
         if (!moveEnabled) return;
 
+        // Determine movement state
+        DetermineMovementState();   
+
+        // perform ground check
         GroundedCheck();
+
+        // handle crouch transition
         HandleCrouchTransition();
 
+        // apply movement
+        ApplyMovement();
+    }
+
+    private void DetermineMovementState()
+    {
+        // determine what movement state we are in
+
+        // if the player is not grounded, they are either jumping or falling
+        if (!isGrounded)
+        {
+            // check if the player is moving upwards or downwards
+            if (velocity.y > 0.1f) // jumping
+            {
+                currentMovementState = MovementState.Jumping;
+            }
+            else if (velocity.y < 0) // falling
+            {
+                currentMovementState = MovementState.Falling;
+            }
+            return; // exit early since we are airborne
+        }
+
+        else if (isGrounded)
+        {
+            // CROUCHING
+            if (crouchInput == true || isObstructed == true)
+            {
+                currentMovementState = MovementState.Crouching;
+            }
+
+            // SPRINTING
+            else if (sprintInput == true && currentMovementState != MovementState.Crouching)
+            {
+                currentMovementState = MovementState.Sprinting;
+            }
+
+            // WALKING
+            else if (moveInput.magnitude > 0.1f && sprintInput == false && crouchInput == false)
+            {
+                currentMovementState = MovementState.Walking;
+            }
+
+            // IDLE
+            else if( moveInput.magnitude <= 0.1f)
+            {
+                currentMovementState = MovementState.Idle;
+            }
+        }
+    }
+
+    private void ApplyMovement()
+    {
+        // get input direction
         Vector3 moveInputDirection = new Vector3(moveInput.x, 0, moveInput.y);
         Vector3 worldMoveDirection = transform.TransformDirection(moveInputDirection);
 
+        // smoothly transition to target move speed based on movement state
         float targetMoveSpeed;
 
-        if (sprintInput == true)
+        switch (currentMovementState)
         {
-            targetMoveSpeed = sprintSpeed;
-        }
-        else
-        {
-            targetMoveSpeed = walkSpeed;
+            case MovementState.Idle: { targetMoveSpeed = 0f; break; }
+            case MovementState.Walking: { targetMoveSpeed = walkSpeed; break; }
+            case MovementState.Sprinting: { targetMoveSpeed = sprintSpeed; break; }
+            case MovementState.Crouching: { targetMoveSpeed = crouchSpeed; break; }
+            case MovementState.Jumping:
+            case MovementState.Falling:
+                targetMoveSpeed = currentMoveSpeed; // maintain current speed while airborne
+                break;
+            default: { targetMoveSpeed = walkSpeed; break; }
         }
 
+        // Calculate lerp speed based on desired duration
         float lerpSpeed = 1f - Mathf.Pow(0.01f, Time.deltaTime / speedTransitionDuration);
         currentMoveSpeed = Mathf.Lerp(currentMoveSpeed, targetMoveSpeed, lerpSpeed);
 
@@ -141,7 +229,7 @@ public class PlayerController : MonoBehaviour
         characterController.Move(movement * Time.deltaTime);
     }
 
-    void HandlePlayerLook()
+    public void HandlePlayerLook()
     {
         if (!lookEnabled) return;
 
@@ -174,11 +262,11 @@ public class PlayerController : MonoBehaviour
         //Debug.Log($"Look Input: {lookInput}");
     }
 
-    void SetSprintInput()
+    void SetSprintInput(bool isSprinting)
     {
         if (!sprintEnabled) return;
 
-        sprintInput = true;
+        sprintInput = isSprinting;
         //sprintInput = !sprintInput;
         Debug.Log($"Sprint Input Toggled: {sprintInput}");
     }
@@ -187,12 +275,9 @@ public class PlayerController : MonoBehaviour
     {
         if (!crouchEnabled) return;
 
-        //if (Context.started)
-        //{
-            crouchInput = !crouchInput;
-            Debug.Log("Crouch Input Toggled");
-            
-        //}
+        crouchInput = !crouchInput;
+        currentMoveSpeed = crouchSpeed; // immediately set speed to crouch or walk speed
+        Debug.Log("Crouch Input Toggled");
     }
 
     private void GroundedCheck()
@@ -211,17 +296,14 @@ public class PlayerController : MonoBehaviour
 
     void HandleJumpInput()
     {
-        //if (context.started)
-        //{
-            Debug.Log("Jump Started");
+        Debug.Log("Jump Started");
 
-            if (jumpEnabled == true && isGrounded && jumpCooldownTimer <= 0f)
-            {
-                jumpRequested = true;
+        if (jumpEnabled == true && isGrounded && jumpCooldownTimer <= 0f)
+        {
+            jumpRequested = true;
 
-                jumpCooldownTimer = 0.1f; // small cooldown to prevent multiple jumps
-            }
-        //}
+            jumpCooldownTimer = 0.1f; // small cooldown to prevent multiple jumps
+        }
     }
 
     private void ApplyJumpAndGravity()
@@ -277,10 +359,10 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            // float maxAllowedHeight = GetMaxAllowedHeight();
- 
-            float maxAllowedHeight = 3.0f;
- 
+            float maxAllowedHeight = GetMaxAllowedHeight();
+
+            //float maxAllowedHeight = 3.0f; // debug
+
             if (maxAllowedHeight >= standingHeight - 0.05f)
             {
                 // No obstruction, allow immediate transition to standing
@@ -289,7 +371,7 @@ public class PlayerController : MonoBehaviour
                 targetCamY = standingCamY;
                 isObstructed = false;
             }
- 
+
             else
             {
                 // Obstruction detected, limit height and center
@@ -297,7 +379,7 @@ public class PlayerController : MonoBehaviour
                 float standRatio = Mathf.Clamp01((targetHeight - crouchingHeight) / (standingHeight - crouchingHeight));
                 targetCenter = Vector3.Lerp(crouchingCenter, standingCenter, standRatio);
                 targetCamY = Mathf.Lerp(crouchingCamY, standingCamY, standRatio);
-            isObstructed = true;
+                isObstructed = true;
             }
         }
  
@@ -311,7 +393,27 @@ public class PlayerController : MonoBehaviour
  
         Vector3 currentCamPos = cameraRoot.localPosition;
         cameraRoot.localPosition = new Vector3(currentCamPos.x, Mathf.Lerp(currentCamPos.y, targetCamY, lerpSpeed), currentCamPos.z);
- 
+    }
+
+    private float GetMaxAllowedHeight()
+    {
+        // get ray upwards from player position to check for obstructions
+        RaycastHit hit;
+        float maxCheckDistance = standingHeight + 0.15f; // small buffer above standing height
+
+        if (Physics.Raycast(transform.position, Vector3.up, out hit, maxCheckDistance, playerLayerMask))
+        {
+            // return the height from the ground to the obstruction
+            float maxHeight = hit.distance - 0.1f; // small buffer below obstruction to prevent clipping
+
+            maxHeight = Mathf.Max(maxHeight, crouchingHeight);
+
+            return maxHeight;
+        }
+        // if we hit something..
+        // calculate the max allowed height based on the hit distance
+        // if nothing hit, no obstruction, return full standing height
+        return standingHeight;
     }
 
     void OnEnable()
