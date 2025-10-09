@@ -21,7 +21,7 @@ public class GameStateManager : MonoBehaviour
 
     private void Start()
     {
-        // set initial state to gameplay (change to mainmenu later)
+        // set initial state to mainmenu 
         currentState = gameState_MainMenu;
         currentActiveState = currentState.ToString();
         currentState.EnterState();
@@ -83,7 +83,14 @@ public class GameStateManager : MonoBehaviour
     }
 
     public void MainMenu() => SwitchState(gameState_MainMenu);
-    public void Play() => SwitchState(gameState_Gameplay);
+    
+    public void Play()
+    {
+        // Load Level 1 - LevelManager
+        LevelManager.Instance.LoadLevel(1);
+    }
+    
+    public void SwitchToGameplayState() => SwitchState(gameState_Gameplay);
     public void Quit() => Application.Quit();
     public void GameOver() => SwitchState(gameState_gameOver); 
 

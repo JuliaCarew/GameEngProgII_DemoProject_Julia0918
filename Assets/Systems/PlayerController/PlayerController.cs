@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour
     private float standingCamY;
     private bool isObstructed = false;
     [Header("Crouch Settings")]
-    [SerializeField] private float crouchTransitionDuration = 0.2f; // Time in seconds for crouch/stand transition (approximate completion)
+    [SerializeField] private float crouchTransitionDuration = 0.2f; // Time in seconds for crouch/stand transition
     [SerializeField] private float crouchingHeight = 1.0f;
     [SerializeField] private Vector3 crouchingCenter = new Vector3(0, 0.5f, 0);
     [SerializeField] private float crouchingCamY = 0.75f;
@@ -131,7 +131,11 @@ public class PlayerController : MonoBehaviour
     {
         characterVelocity = characterController.velocity.magnitude;
 
-        if (!moveEnabled) return;
+        if (!moveEnabled)
+        {
+            Debug.LogWarning("Player movement is disabled!");
+            return;
+        }
 
         // Determine movement state
         DetermineMovementState();   
@@ -226,7 +230,7 @@ public class PlayerController : MonoBehaviour
         Vector3 movement = horizontalMovement;
         movement.y = velocity.y;
 
-        characterController.Move(movement * Time.deltaTime * currentMoveSpeed);
+        characterController.Move(movement * Time.deltaTime);
     }
 
     public void HandlePlayerLook()
@@ -291,7 +295,6 @@ public class PlayerController : MonoBehaviour
         transform.position = spawnPoint.position;
         transform.rotation = spawnPoint.rotation;
         characterController.enabled = true;
-
     }
 
     void HandleJumpInput()

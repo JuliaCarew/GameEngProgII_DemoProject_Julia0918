@@ -26,7 +26,7 @@ public class GameState_MainMenu : IState
     public void FixedUpdateState()
     {
         // Handle physics-related updates for main menu state here
-        Debug.Log("MainMenu State : Running fixed update");
+        //Debug.Log("MainMenu State : Running fixed update");
     }
 
     public void UpdateState()
@@ -37,7 +37,7 @@ public class GameState_MainMenu : IState
     public void LateUpdateState()
     {
         // Handle any late updates that need to occur after the main update logic for main menu state here
-        Debug.Log("MainMenu State : Running late update");
+        //Debug.Log("MainMenu State : Running late update");
     }
 
     public void ExitState()

@@ -28,15 +28,16 @@ public class UIManager : MonoBehaviour
 
     public void DisableAllMenuUI()
     {
-        pauseMenuUI.SetActive(false);
-        mainMenuUI.SetActive(false);
-        gameplayUI.SetActive(false);
-        gameOverUI.SetActive(false);
+        if (pauseMenuUI != null) pauseMenuUI.SetActive(false);
+        if (mainMenuUI != null) mainMenuUI.SetActive(false);
+        if (gameplayUI != null) gameplayUI.SetActive(false);
+        if (gameOverUI != null) gameOverUI.SetActive(false);
     }
 
     public void EnableMainMenu()
     {
         Time.timeScale = 0f;
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible = true;
 
         DisableAllMenuUI();
@@ -46,6 +47,7 @@ public class UIManager : MonoBehaviour
     public void EnablePause()
     {
         Time.timeScale = 0f;
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible = true;
 
         DisableAllMenuUI();
@@ -55,15 +57,21 @@ public class UIManager : MonoBehaviour
     public void EnableGameplay()
     {
         Time.timeScale = 1f;
+        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         UnityEngine.Cursor.visible = false;
 
         DisableAllMenuUI();
-        gameplayUI.SetActive(true);
+        
+        if (gameplayUI != null)
+        {
+            gameplayUI.SetActive(true);
+        }
     }
 
     public void EnableGameOver()
     {
         Time.timeScale = 0f;
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible = true;
 
         DisableAllMenuUI();

@@ -26,13 +26,13 @@ public class GameState_Pause : IState
     public void FixedUpdateState()
     {
         // Handle physics-related updates for main menu state here
-        Debug.Log("Pause State : Running fixed update");
+        //Debug.Log("Pause State : Running fixed update");
     }
 
     public void UpdateState()
     {
         // Handle regular updates such as input handling and UI logic for main menu state here
-        Debug.Log("Pause State : Running update");
+        //Debug.Log("Pause State : Running update");
 
         if (Keyboard.current[Key.Escape].wasPressedThisFrame)
         {
@@ -43,7 +43,7 @@ public class GameState_Pause : IState
     public void LateUpdateState()
     {
         // Handle any late updates that need to occur after the main update logic for main menu state here
-        Debug.Log("Pause State : Running late update");
+        //Debug.Log("Pause State : Running late update");
     }
 
     public void ExitState()
