@@ -24,15 +24,10 @@ public class InputManager : MonoBehaviour, Inputs.IPlayerActions
     // Events that are triggered when input activity is detected
     public event Action<Vector2> MoveInputEvent;
     public event Action<Vector2> LookInputEvent;
-
-    // jumping
-    public event Action JumpInputEvent;
-
-    // sprint
-    public event Action<bool> SprintInputEvent;
-
-    // crouch
-    public event Action CrouchInputEvent;
+    public event Action JumpInputEvent; // jumping
+    public event Action<bool> SprintInputEvent; // sprint
+    public event Action CrouchInputEvent; // crouch
+    public event Action InteractInputEvent; // interact
 
     #endregion
 
@@ -65,6 +60,11 @@ public class InputManager : MonoBehaviour, Inputs.IPlayerActions
     public void OnCrouch(InputAction.CallbackContext context)
     {
         CrouchInputEvent?.Invoke();
+    }
+
+    public void OnInteract(InputAction.CallbackContext context)
+    {
+        InteractInputEvent?.Invoke();
     }
 
     #endregion

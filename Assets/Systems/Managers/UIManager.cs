@@ -61,7 +61,7 @@ public class UIManager : MonoBehaviour
         UnityEngine.Cursor.visible = false;
 
         DisableAllMenuUI();
-        
+
         if (gameplayUI != null)
         {
             gameplayUI.SetActive(true);
@@ -78,4 +78,9 @@ public class UIManager : MonoBehaviour
         gameOverUI.SetActive(true);
     }
 
+    public void ShowInteractionPrompt(string prompt)
+    {
+        // Implementation for showing interaction prompt on UI
+        Debug.Log("Show Interaction Prompt: " + prompt);
+    }   
 }
