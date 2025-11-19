@@ -18,7 +18,6 @@ public class GameState_BootLoad : IState
 
     public void EnterState()
     {
-        // Additional initialization logic for main menu state can be added here
         Debug.Log("Entered Boot Load State");
 
         Cursor.visible = false;
@@ -41,24 +40,17 @@ public class GameState_BootLoad : IState
 
     public void FixedUpdateState()
     {
-        // Handle physics-related updates for main menu state here
-        //Debug.Log("MainMenu State : Running fixed update");
     }
 
     public void UpdateState()
     {
-        // Handle regular updates such as input handling and UI logic for main menu state here
     }
 
     public void LateUpdateState()
     {
-        // Handle any late updates that need to occur after the main update logic for main menu state here
-        //Debug.Log("MainMenu State : Running late update");
     }
 
     public void ExitState()
     {
-        // Cleanup logic for exiting main menu state can be added here
-        Debug.Log("Exited Boot Load State");
     }
 }

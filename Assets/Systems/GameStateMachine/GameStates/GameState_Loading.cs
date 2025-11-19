@@ -11,6 +11,7 @@ public class GameState_Loading : IState
 
     #endregion
 
+    #region Variables and References
     // references
     GameManager gameManager => GameManager.Instance;
     GameStateManager gameStateManager => GameManager.Instance.GameStateManager;
@@ -21,6 +22,13 @@ public class GameState_Loading : IState
     private AsyncOperation loadingOperation;
     private string targetSceneName;
     private bool isLoading = false;
+    private bool canActivateScene = false; 
+    
+    // smooth progress animation
+    private float displayedProgress = 0f;
+    private float progressAnimationSpeed = 0.5f; // control fill speed (lower = slower)
+
+    #endregion
 
     public void EnterState()
     {
@@ -30,6 +38,8 @@ public class GameState_Loading : IState
         Time.timeScale = 1f;
         
         // Reset progress bar
+        displayedProgress = 0f;
+        canActivateScene = false;
         uiManager.ResetLoadingProgress();
         uiManager.EnableLoadScreen();
         
@@ -39,7 +49,6 @@ public class GameState_Loading : IState
 
     public void FixedUpdateState()
     {
-        // Handle physics-related updates for loading state here
     }
 
     public void UpdateState()
@@ -47,38 +56,55 @@ public class GameState_Loading : IState
         // Update progress bar if loading
         if (isLoading && loadingOperation != null)
         {
-            float progress;
-            if (loadingOperation.isDone)
+            float targetProgress;
+            
+            // If the async operation is done loading, target is 100%
+            if (loadingOperation.progress >= 0.9f)
             {
-                // Loading is complete, set progress to 100%
-                progress = 1.0f;
-                isLoading = false;
-                loadingOperation = null;
+                // Scene is ready to activate, but we'll wait for the progress bar to fill
+                targetProgress = 1.0f;
             }
             else
             {
-                progress = Mathf.Clamp01(loadingOperation.progress / 0.9f);
+                targetProgress = Mathf.Clamp01(loadingOperation.progress / 0.9f);
             }
 
-            uiManager.UpdateLoadingProgress(progress);
-            // TODO: change progress to update slowly over time
-            Debug.Log($"Loading progress: {progress * 100f}%");
+            // Smoothly animate the displayed progress toward the target progress
+            displayedProgress = Mathf.MoveTowards(displayedProgress, targetProgress, progressAnimationSpeed * Time.deltaTime);
+            
+            uiManager.UpdateLoadingProgress(displayedProgress);
+            Debug.Log($"Loading progress: {displayedProgress * 100f:F1}% (Target: {targetProgress * 100f:F1}%)");
+
+            // Only allow scene activation when progress bar has reached 100%
+            if (displayedProgress >= 1.0f && !canActivateScene)
+            {
+                canActivateScene = true;
+                loadingOperation.allowSceneActivation = true;
+                Debug.Log("Progress bar complete! Activating scene...");
+            }
+
+            // Check if loading is complete and displayed progress has reached 100%
+            if (canActivateScene && loadingOperation.isDone)
+            {
+                isLoading = false;
+                loadingOperation = null;
+                canActivateScene = false;
+            }
         }
     }
 
     public void LateUpdateState()
     {
-        // Handle any late updates that need to occur after the main update logic for loading state here
     }
 
     public void ExitState()
     {
         Debug.Log("Exited Loading State");
         isLoading = false;
+        canActivateScene = false;
         loadingOperation = null;
     }
 
-    // Public method to start loading a scene
     public void LoadScene(string sceneName)
     {
         if (isLoading)
@@ -89,13 +115,13 @@ public class GameState_Loading : IState
 
         targetSceneName = sceneName;
         isLoading = true;
+        canActivateScene = false;
         loadingOperation = SceneManager.LoadSceneAsync(sceneName);
-        loadingOperation.allowSceneActivation = true;
+        loadingOperation.allowSceneActivation = false;
         
         Debug.Log("Starting to load scene: " + sceneName);
     }
 
-    // Public method to start loading a level by number
     public void LoadLevel(int levelNumber)
     {
         string levelName = $"Level {levelNumber:D2}";
