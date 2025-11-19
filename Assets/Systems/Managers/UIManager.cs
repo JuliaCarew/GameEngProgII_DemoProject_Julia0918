@@ -1,5 +1,6 @@
 using UnityEngine;
-using UnityEngine.UIElements;
+//using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -8,6 +9,10 @@ public class UIManager : MonoBehaviour
     public GameObject mainMenuUI;
     public GameObject gameplayUI;
     public GameObject gameOverUI;
+    public GameObject loadScreenUI;
+    [Header("Loading Screen UI")]
+    public Slider progressBarSlider;
+
 
     private void Awake()
     {
@@ -32,6 +37,7 @@ public class UIManager : MonoBehaviour
         if (mainMenuUI != null) mainMenuUI.SetActive(false);
         if (gameplayUI != null) gameplayUI.SetActive(false);
         if (gameOverUI != null) gameOverUI.SetActive(false);
+        if (loadScreenUI != null) loadScreenUI.SetActive(false);
     }
 
     public void EnableMainMenu()
@@ -78,9 +84,36 @@ public class UIManager : MonoBehaviour
         gameOverUI.SetActive(true);
     }
 
+    public void EnableLoadScreen()
+    {
+        Time.timeScale = 1f;
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = false;
+
+        DisableAllMenuUI();
+        loadScreenUI.SetActive(true);
+    }
+
     public void ShowInteractionPrompt(string prompt)
     {
         // Implementation for showing interaction prompt on UI
         Debug.Log("Show Interaction Prompt: " + prompt);
-    }   
+    }
+
+    // loading progress bar
+    public void UpdateLoadingProgress(float progress)
+    {
+        if (progressBarSlider != null)
+        {
+            progressBarSlider.value = Mathf.Clamp01(progress);
+        }
+    }
+
+    public void ResetLoadingProgress()
+    {
+        if (progressBarSlider != null)
+        {
+            progressBarSlider.value = 0f;
+        }
+    }
 }

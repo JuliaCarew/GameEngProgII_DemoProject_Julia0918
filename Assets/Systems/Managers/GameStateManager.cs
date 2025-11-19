@@ -17,12 +17,13 @@ public class GameStateManager : MonoBehaviour
     private GameState_Gameplay gameState_Gameplay = GameState_Gameplay.Instance;
     private GameState_Pause gameState_pause = GameState_Pause.Instance;
     private GameState_GameOver gameState_gameOver = GameState_GameOver.Instance;
-
+    private GameState_BootLoad gameState_BootLoad = GameState_BootLoad.Instance;
+    private GameState_Loading gameState_Loading = GameState_Loading.Instance;
 
     private void Start()
     {
         // set initial state to mainmenu 
-        currentState = gameState_MainMenu;
+        currentState = gameState_BootLoad;
         currentActiveState = currentState.ToString();
         currentState.EnterState();
     }
@@ -92,7 +93,8 @@ public class GameStateManager : MonoBehaviour
     
     public void SwitchToGameplayState() => SwitchState(gameState_Gameplay);
     public void Quit() => Application.Quit();
-    public void GameOver() => SwitchState(gameState_gameOver); 
+    public void GameOver() => SwitchState(gameState_gameOver);
+    public void SwitchToLoadingState() => SwitchState(gameState_Loading);
 
     #endregion
 }

@@ -16,7 +16,15 @@ public class LevelChangeTrigger : MonoBehaviour
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = currentSceneIndex + 1;
 
-        SceneManager.LoadScene(nextSceneIndex);
+        if (GameManager.Instance != null && GameManager.Instance.LevelManager != null)
+        {
+            GameManager.Instance.LevelManager.LoadScene(nextSceneIndex);
+        }
+        else
+        {
+            // Fallback to direct loading if managers aren't available
+            SceneManager.LoadScene(nextSceneIndex);
+        }
     }
 }
 

@@ -295,6 +295,9 @@ public class PlayerController : MonoBehaviour
         transform.position = spawnPoint.position;
         transform.rotation = spawnPoint.rotation;
         characterController.enabled = true;
+
+        velocity = Vector3.zero;
+        cameraRoot.localEulerAngles = Vector3.zero;
     }
 
     void HandleJumpInput()

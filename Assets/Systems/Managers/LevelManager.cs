@@ -43,14 +43,17 @@ public class LevelManager : MonoBehaviour
             if (scenePlayer != null)
                 GameManager.Instance.UpdatePlayerController(scenePlayer);
 
-            // switch to Gameplay state
+            // switch to Gameplay state (exiting loading state)
             gameStateManager.SwitchToGameplayState();
 
             // move player to spawnpoint
             MovePlayerToSpawnPoint();
         }
         else if (scene.name == "Main Menu")
-            gameStateManager.MainMenu(); // switch to Main Menu state
+        {
+            // switch to Main Menu state (exiting loading state)
+            gameStateManager.MainMenu();
+        }
     }
 
     private bool IsGameplayScene(string sceneName)
@@ -70,7 +73,29 @@ public class LevelManager : MonoBehaviour
         playerController.MovePlayerToSpawnPosition(spawnPoint.transform);
     }
 
-    public void LoadScene(string sceneName) => SceneManager.LoadScene(sceneName);
+    public void LoadScene(string sceneName)
+    {
+        // Switch to loading state first, then let it handle the async loading
+        gameStateManager.SwitchToLoadingState();
+        GameState_Loading.Instance.LoadScene(sceneName);
+    }
+    
+    public void LoadScene(int sceneIndex)
+    {
+        // Load scene by build index
+        string sceneName = SceneUtility.GetScenePathByBuildIndex(sceneIndex);
+        if (!string.IsNullOrEmpty(sceneName))
+        {
+            // Extract scene name from path
+            string sceneNameOnly = System.IO.Path.GetFileNameWithoutExtension(sceneName);
+            LoadScene(sceneNameOnly);
+        }
+        else
+        {
+            Debug.LogError($"Scene at index {sceneIndex} not found in build settings!");
+        }
+    }
+    
     public void LoadLevel(int levelNumber)
     {
         string levelName = $"Level {levelNumber:D2}"; 

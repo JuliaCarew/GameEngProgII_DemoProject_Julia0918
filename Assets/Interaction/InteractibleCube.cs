@@ -13,4 +13,9 @@ public class InteractibleCube : BaseInteractible
 
         gameObject.SetActive(false); // deactivate the cube upon interaction
     }
+
+    public override string GetInteractionPrompt()
+    {
+        return "Interact with E";
+    }
 }
